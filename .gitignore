@@ -1,1 +1,3 @@
 pip install pydub numpy
+pydub==0.25.1
+numpy==1.23.3
