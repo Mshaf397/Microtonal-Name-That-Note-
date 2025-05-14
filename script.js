@@ -20,27 +20,18 @@ document.addEventListener("DOMContentLoaded", () => {
         "24edo": (steps) => Math.pow(2, steps / 24),
         "31edo": (steps) => Math.pow(2, steps / 31),
         "53edo": (steps) => Math.pow(2, steps / 53),
-        "13ed3": (steps) => Math.pow(3, steps / 13),
+        "ed3": (steps) => Math.pow(3, steps / 13),
         "ji": (ratio) => ratio
     };
 
     const scales = {
         "Major": [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2],
-        "Minor": [1, 1.125, 1.2, 1.333, 1.5, 1.6, 1.8, 2],
-        "Pentatonic": [1, 1.2, 1.333, 1.5, 1.8, 2], // Fixed to 5 distinct pitch classes
+        "Minor": [1, 1.125, 1.2, 1.333, 1.5, 1.6, 1.875, 2],
+        "Pentatonic": [1, 1.2, 1.333, 1.5, 1.8, 2],  // Fixed to 5 distinct pitch classes
         "Chromatic": {
             "24edo": Array.from({ length: 24 }, (_, i) => Math.pow(2, i / 24)), // Quarter tones
             "31edo": Array.from({ length: 31 }, (_, i) => Math.pow(2, i / 31)), // 31 steps (diesis)
             "ji": [16/15, 9/8, 6/5, 5/4, 4/3, 64/45, 3/2, 8/5, 5/3, 16/9, 15/8, 2/1] // Just Intonation chromatic
-        }
-    };
-    
-    const chords = {
-        "Major": [1, 1.25, 1.5],
-        "Minor": [1, 1.2, 1.5],
-        "Pythagorean Major": [1, 1.265625, 1.5],
-        "Pythagorean Minor": [1, 1.185185, 1.5],
-        "Diminished": [1, 1.2, 1.422222]
         }
     };
 
@@ -53,10 +44,27 @@ document.addEventListener("DOMContentLoaded", () => {
         osc.stop(audioContext.currentTime + duration);
     }
 
-    function playScale(baseFreq, intervals) {
-        intervals.forEach((interval, i) => {
-            setTimeout(() => playTone(baseFreq * interval, 0.7), i * 500);
-        });
+    function playChord(baseFreq, intervals) {
+        const osc1 = audioContext.createOscillator();
+        osc1.type = "sine";
+        osc1.frequency.value = baseFreq * intervals[0];
+        osc1.connect(audioContext.destination);
+        osc1.start();
+        osc1.stop(audioContext.currentTime + 1);
+
+        const osc2 = audioContext.createOscillator();
+        osc2.type = "sine";
+        osc2.frequency.value = baseFreq * intervals[1];
+        osc2.connect(audioContext.destination);
+        osc2.start();
+        osc2.stop(audioContext.currentTime + 1);
+
+        const osc3 = audioContext.createOscillator();
+        osc3.type = "sine";
+        osc3.frequency.value = baseFreq * intervals[2];
+        osc3.connect(audioContext.destination);
+        osc3.start();
+        osc3.stop(audioContext.currentTime + 1);
     }
 
     function generateExercise() {
@@ -64,17 +72,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const type = exerciseTypeSelect.value;
         const tuning = tuningSystemSelect.value;
 
-        if (type === "scale") {
-            const scaleNames = Object.keys(scales);
-            currentAnswer = scaleNames[Math.floor(Math.random() * scaleNames.length)];
-            
-            if (currentAnswer === "Chromatic") {
-                playScale(baseFreq, scales.Chromatic[tuning] || scales.Chromatic["ji"]);
-                updateOptions(Object.keys(scales.Chromatic));
-            } else {
-                playScale(baseFreq, scales[currentAnswer]);
-                updateOptions([currentAnswer]);
-            }
+        if (type === "chord") {
+            // Example of a chord (Major triad, can be adjusted for complexity)
+            const chordIntervals = [1, 5/4, 3/2]; // 1st, major 3rd, perfect 5th for a major chord
+            playChord(baseFreq, chordIntervals);
+            updateOptions(["Major Chord", "Minor Chord", "Diminished Chord"]);
+        } else {
+            // For scales or intervals, existing functionality would apply.
         }
     }
 
