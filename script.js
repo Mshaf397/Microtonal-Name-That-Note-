@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const scales = {
         "Major": [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2],
-        "Minor": [1, 1.125, 1.2, 1.333, 1.5, 1.6, 1.875, 2],
+        "Minor": [1, 1.125, 1.2, 1.333, 1.5, 1.6, 1.75, 2],
         "Pentatonic": [1, 1.25, 1.5, 1.75, 2],
         "Chromatic": Array.from({ length: 12 }, (_, i) => Math.pow(2, i / 12))
     };
