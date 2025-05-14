@@ -2,12 +2,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const baseFrequencyInput = document.getElementById("base-frequency");
     const tuningSystemSelect = document.getElementById("tuning-system");
     const exerciseTypeSelect = document.getElementById("exercise-type");
+    const difficultySelect = document.getElementById("difficulty");
     const playSoundButton = document.getElementById("play-sound");
     const startTrainingButton = document.getElementById("start-training");
     const optionsContainer = document.getElementById("options-container");
+    const feedback = document.getElementById("feedback");
     const correctScoreDisplay = document.getElementById("correct-score");
     const incorrectScoreDisplay = document.getElementById("incorrect-score");
-    const feedback = document.getElementById("feedback");
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     let correctScore = 0;
@@ -22,52 +23,38 @@ document.addEventListener("DOMContentLoaded", () => {
         "ji": (ratio) => ratio
     };
 
-    const justIntonationRatios = [
-        [1, 1], [9, 8], [5, 4], [4, 3], [3, 2], [5, 3], [15, 8], [2, 1]
-    ];
+    const scales = {
+        "Major": [1, 1.125, 1.25, 1.333, 1.5, 1.667, 1.875, 2],
+        "Minor": [1, 1.125, 1.2, 1.333, 1.5, 1.6, 1.875, 2],
+        "Pentatonic": [1, 1.25, 1.5, 1.75, 2],
+        "Chromatic": Array.from({ length: 12 }, (_, i) => Math.pow(2, i / 12))
+    };
 
     function playTone(frequency, duration = 1) {
-        const oscillator = audioContext.createOscillator();
-        oscillator.type = "sine";
-        oscillator.frequency.value = frequency;
-        oscillator.connect(audioContext.destination);
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + duration);
+        const osc = audioContext.createOscillator();
+        osc.type = "sine";
+        osc.frequency.value = frequency;
+        osc.connect(audioContext.destination);
+        osc.start();
+        osc.stop(audioContext.currentTime + duration);
     }
 
-    function playChord(baseFreq, intervals) {
+    function playScale(baseFreq, intervals) {
         intervals.forEach((interval, i) => {
-            setTimeout(() => playTone(baseFreq * interval, 1), i * 500);
+            setTimeout(() => playTone(baseFreq * interval, 0.7), i * 500);
         });
     }
 
     function generateExercise() {
         const baseFreq = parseFloat(baseFrequencyInput.value) || 440;
         const type = exerciseTypeSelect.value;
+        const tuning = tuningSystemSelect.value;
 
-        if (type === "interval") {
-            const step = Math.floor(Math.random() * 12) - 6;
-            currentAnswer = `${step} steps`;
-            const freq = baseFreq * tuningSystems[tuningSystemSelect.value](step);
-            playTone(freq);
-            updateOptions(["-6 steps", "0 steps", "6 steps"]);
-
-        } else if (type === "scale") {
-            const scales = ["Major", "Minor", "Pentatonic", "Chromatic"];
-            currentAnswer = scales[Math.floor(Math.random() * scales.length)];
-            playTone(baseFreq);
-            updateOptions(scales);
-
-        } else if (type === "chord") {
-            const chords = ["Major", "Minor", "Diminished"];
-            currentAnswer = chords[Math.floor(Math.random() * chords.length)];
-            const chordIntervals = {
-                "Major": [1, 1.25, 1.5],
-                "Minor": [1, 1.2, 1.5],
-                "Diminished": [1, 1.2, 1.4]
-            };
-            playChord(baseFreq, chordIntervals[currentAnswer]);
-            updateOptions(chords);
+        if (type === "scale") {
+            const scaleNames = Object.keys(scales);
+            currentAnswer = scaleNames[Math.floor(Math.random() * scaleNames.length)];
+            playScale(baseFreq, scales[currentAnswer]);
+            updateOptions(scaleNames);
         }
     }
 
@@ -88,11 +75,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (selectedAnswer === currentAnswer) {
             correctScore++;
-            correctScoreDisplay.textContent = correctScore;
         } else {
             incorrectScore++;
-            incorrectScoreDisplay.textContent = incorrectScore;
         }
+
+        correctScoreDisplay.textContent = correctScore;
+        incorrectScoreDisplay.textContent = incorrectScore;
 
         setTimeout(() => {
             feedback.textContent = "";
