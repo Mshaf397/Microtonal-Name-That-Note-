@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microtonal Ear Training</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Microtonal Ear Training</h1>
+
+        <div class="settings">
+            <h2>Settings</h2>
+            <label for="base-frequency">Base Frequency (Hz):</label>
+            <input type="number" id="base-frequency" min="20" max="2000" value="440">
+
+            <label for="tuning-system">Tuning System:</label>
+            <select id="tuning-system">
+                <option value="12edo">12 EDO</option>
+                <option value="24edo">24 EDO</option>
+                <option value="31edo">31 EDO</option>
+                <option value="ed3">ED3</option>
+                <option value="ji">Just Intonation</option>
+            </select>
+
+            <button id="start-training">Start Training</button>
+        </div>
+
+        <div class="exercise">
+            <h2>Exercise</h2>
+            <p>Identify the interval, scale, or chord played:</p>
+            <button id="play-sound">Play Sound</button>
+            <div class="options">
+                <button class="option">Option 1</button>
+                <button class="option">Option 2</button>
+                <button class="option">Option 3</button>
+            </div>
+        </div>
+
+        <div class="scoreboard">
+            <h2>Score</h2>
+            <p>Correct: <span id="correct-score">0</span></p>
+            <p>Incorrect: <span id="incorrect-score">0</span></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
