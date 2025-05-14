@@ -1,10 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
     const baseFrequencyInput = document.getElementById("base-frequency");
     const tuningSystemSelect = document.getElementById("tuning-system");
+    const exerciseTypeSelect = document.getElementById("exercise-type");
     const playSoundButton = document.getElementById("play-sound");
-    const optionsButtons = document.querySelectorAll(".option");
+    const startTrainingButton = document.getElementById("start-training");
+    const optionsContainer = document.getElementById("options-container");
     const correctScoreDisplay = document.getElementById("correct-score");
     const incorrectScoreDisplay = document.getElementById("incorrect-score");
+    const instruction = document.getElementById("instruction");
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     let correctScore = 0;
@@ -16,72 +19,91 @@ document.addEventListener("DOMContentLoaded", () => {
         "24edo": (steps) => Math.pow(2, steps / 24),
         "31edo": (steps) => Math.pow(2, steps / 31),
         "ed3": (steps) => Math.pow(3, steps / 12),
-        "ji": (ratio) => ratio // Ratios will be predefined
+        "ji": (ratio) => ratio
     };
 
     const justIntonationRatios = [
-        [1, 1],
-        [9, 8],
-        [5, 4],
-        [4, 3],
-        [3, 2],
-        [5, 3],
-        [15, 8],
-        [2, 1]
+        [1, 1], [9, 8], [5, 4], [4, 3], [3, 2], [5, 3], [15, 8], [2, 1]
     ];
 
     function playTone(frequency, duration = 1) {
         const oscillator = audioContext.createOscillator();
         oscillator.type = "sine";
         oscillator.frequency.value = frequency;
-
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = 0.3;
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
+        oscillator.connect(audioContext.destination);
         oscillator.start();
         oscillator.stop(audioContext.currentTime + duration);
     }
 
-    function generateExercise() {
-        const baseFrequency = parseFloat(baseFrequencyInput.value) || 440;
+    function generateIntervalExercise(baseFrequency) {
+        const step = Math.floor(Math.random() * 12) - 6;
         const tuningSystem = tuningSystemSelect.value;
+        const ratio = tuningSystems[tuningSystem](step);
+        const intervalFrequency = baseFrequency * ratio;
 
-        let step, frequency, ratio;
-
-        if (tuningSystem === "ji") {
-            ratio = justIntonationRatios[Math.floor(Math.random() * justIntonationRatios.length)];
-            frequency = baseFrequency * (ratio[0] / ratio[1]);
-            currentAnswer = `${ratio[0]}/${ratio[1]}`;
-        } else {
-            step = Math.floor(Math.random() * 12) - 6;  // Random step between -6 and +6
-            const multiplier = tuningSystems[tuningSystem](step);
-            frequency = baseFrequency * multiplier;
-            currentAnswer = `${step} steps`;
-        }
-
-        console.log("Generated Frequency:", frequency);
-        return frequency;
+        currentAnswer = `${step} steps`;
+        return intervalFrequency;
     }
 
-    playSoundButton.addEventListener("click", () => {
-        const frequency = generateExercise();
+    function generateScaleExercise(baseFrequency) {
+        const scales = ["Major", "Minor", "Pentatonic", "Chromatic"];
+        currentAnswer = scales[Math.floor(Math.random() * scales.length)];
+        return baseFrequency * (Math.random() + 0.5);
+    }
+
+    function generateChordExercise(baseFrequency) {
+        const chords = ["Major", "Minor", "Diminished", "Augmented"];
+        currentAnswer = chords[Math.floor(Math.random() * chords.length)];
+        return baseFrequency * (Math.random() + 0.5);
+    }
+
+    function generateExercise() {
+        const baseFrequency = parseFloat(baseFrequencyInput.value) || 440;
+        const exerciseType = exerciseTypeSelect.value;
+        let frequency;
+
+        switch (exerciseType) {
+            case "interval":
+                instruction.textContent = "Identify the interval:";
+                frequency = generateIntervalExercise(baseFrequency);
+                updateOptions(["-6 steps", "-3 steps", "0 steps", "3 steps", "6 steps"]);
+                break;
+            case "scale":
+                instruction.textContent = "Identify the scale:";
+                frequency = generateScaleExercise(baseFrequency);
+                updateOptions(["Major", "Minor", "Pentatonic", "Chromatic"]);
+                break;
+            case "chord":
+                instruction.textContent = "Identify the chord:";
+                frequency = generateChordExercise(baseFrequency);
+                updateOptions(["Major", "Minor", "Diminished", "Augmented"]);
+                break;
+        }
+
         playTone(frequency);
-    });
+    }
 
-    optionsButtons.forEach(button => {
-        button.addEventListener("click", (e) => {
-            const selectedAnswer = e.target.textContent;
-
-            if (selectedAnswer === currentAnswer) {
-                correctScore++;
-                correctScoreDisplay.textContent = correctScore;
-            } else {
-                incorrectScore++;
-                incorrectScoreDisplay.textContent = incorrectScore;
-            }
+    function updateOptions(options) {
+        optionsContainer.innerHTML = "";
+        options.forEach(option => {
+            const button = document.createElement("button");
+            button.className = "option";
+            button.textContent = option;
+            button.addEventListener("click", () => handleAnswer(option));
+            optionsContainer.appendChild(button);
         });
-    });
+    }
+
+    function handleAnswer(selectedAnswer) {
+        if (selectedAnswer === currentAnswer) {
+            correctScore++;
+            correctScoreDisplay.textContent = correctScore;
+        } else {
+            incorrectScore++;
+            incorrectScoreDisplay.textContent = incorrectScore;
+        }
+    }
+
+    startTrainingButton.addEventListener("click", generateExercise);
+    playSoundButton.addEventListener("click", generateExercise);
 });
