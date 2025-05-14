@@ -34,6 +34,15 @@ document.addEventListener("DOMContentLoaded", () => {
             "ji": [16/15, 9/8, 6/5, 5/4, 4/3, 64/45, 3/2, 8/5, 5/3, 16/9, 15/8, 2/1] // Just Intonation chromatic
         }
     };
+    
+    const chords = {
+        "Major": [1, 1.25, 1.5],
+        "Minor": [1, 1.2, 1.5],
+        "Pythagorean Major": [1, 1.265625, 1.5],
+        "Pythagorean Minor": [1, 1.185185, 1.5],
+        "Diminished": [1, 1.2, 1.422222]
+        }
+    };
 
     function playTone(frequency, duration = 1) {
         const osc = audioContext.createOscillator();
