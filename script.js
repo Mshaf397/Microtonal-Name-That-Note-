@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const optionsContainer = document.getElementById("options-container");
     const correctScoreDisplay = document.getElementById("correct-score");
     const incorrectScoreDisplay = document.getElementById("incorrect-score");
-    const instruction = document.getElementById("instruction");
+    const feedback = document.getElementById("feedback");
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     let correctScore = 0;
@@ -35,52 +35,40 @@ document.addEventListener("DOMContentLoaded", () => {
         oscillator.stop(audioContext.currentTime + duration);
     }
 
-    function generateIntervalExercise(baseFrequency) {
-        const step = Math.floor(Math.random() * 12) - 6;
-        const tuningSystem = tuningSystemSelect.value;
-        const ratio = tuningSystems[tuningSystem](step);
-        const intervalFrequency = baseFrequency * ratio;
-
-        currentAnswer = `${step} steps`;
-        return intervalFrequency;
-    }
-
-    function generateScaleExercise(baseFrequency) {
-        const scales = ["Major", "Minor", "Pentatonic", "Chromatic"];
-        currentAnswer = scales[Math.floor(Math.random() * scales.length)];
-        return baseFrequency * (Math.random() + 0.5);
-    }
-
-    function generateChordExercise(baseFrequency) {
-        const chords = ["Major", "Minor", "Diminished", "Augmented"];
-        currentAnswer = chords[Math.floor(Math.random() * chords.length)];
-        return baseFrequency * (Math.random() + 0.5);
+    function playChord(baseFreq, intervals) {
+        intervals.forEach((interval, i) => {
+            setTimeout(() => playTone(baseFreq * interval, 1), i * 500);
+        });
     }
 
     function generateExercise() {
-        const baseFrequency = parseFloat(baseFrequencyInput.value) || 440;
-        const exerciseType = exerciseTypeSelect.value;
-        let frequency;
+        const baseFreq = parseFloat(baseFrequencyInput.value) || 440;
+        const type = exerciseTypeSelect.value;
 
-        switch (exerciseType) {
-            case "interval":
-                instruction.textContent = "Identify the interval:";
-                frequency = generateIntervalExercise(baseFrequency);
-                updateOptions(["-6 steps", "-3 steps", "0 steps", "3 steps", "6 steps"]);
-                break;
-            case "scale":
-                instruction.textContent = "Identify the scale:";
-                frequency = generateScaleExercise(baseFrequency);
-                updateOptions(["Major", "Minor", "Pentatonic", "Chromatic"]);
-                break;
-            case "chord":
-                instruction.textContent = "Identify the chord:";
-                frequency = generateChordExercise(baseFrequency);
-                updateOptions(["Major", "Minor", "Diminished", "Augmented"]);
-                break;
+        if (type === "interval") {
+            const step = Math.floor(Math.random() * 12) - 6;
+            currentAnswer = `${step} steps`;
+            const freq = baseFreq * tuningSystems[tuningSystemSelect.value](step);
+            playTone(freq);
+            updateOptions(["-6 steps", "0 steps", "6 steps"]);
+
+        } else if (type === "scale") {
+            const scales = ["Major", "Minor", "Pentatonic", "Chromatic"];
+            currentAnswer = scales[Math.floor(Math.random() * scales.length)];
+            playTone(baseFreq);
+            updateOptions(scales);
+
+        } else if (type === "chord") {
+            const chords = ["Major", "Minor", "Diminished"];
+            currentAnswer = chords[Math.floor(Math.random() * chords.length)];
+            const chordIntervals = {
+                "Major": [1, 1.25, 1.5],
+                "Minor": [1, 1.2, 1.5],
+                "Diminished": [1, 1.2, 1.4]
+            };
+            playChord(baseFreq, chordIntervals[currentAnswer]);
+            updateOptions(chords);
         }
-
-        playTone(frequency);
     }
 
     function updateOptions(options) {
@@ -95,6 +83,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function handleAnswer(selectedAnswer) {
+        feedback.style.color = selectedAnswer === currentAnswer ? "#00bfa6" : "#ff5252";
+        feedback.textContent = selectedAnswer === currentAnswer ? "Correct!" : "Incorrect.";
+
         if (selectedAnswer === currentAnswer) {
             correctScore++;
             correctScoreDisplay.textContent = correctScore;
@@ -102,6 +93,11 @@ document.addEventListener("DOMContentLoaded", () => {
             incorrectScore++;
             incorrectScoreDisplay.textContent = incorrectScore;
         }
+
+        setTimeout(() => {
+            feedback.textContent = "";
+            generateExercise();
+        }, 1000);
     }
 
     startTrainingButton.addEventListener("click", generateExercise);
