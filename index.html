@@ -14,16 +14,22 @@
         <div class="settings">
             <h2>Settings</h2>
             <label for="base-frequency">Base Frequency (Hz):</label>
-            <input type="number" id="base-frequency" min="20" max="20000" value="220">
+            <input type="number" id="base-frequency" min="20" max="2000" value="440">
 
             <label for="tuning-system">Tuning System:</label>
             <select id="tuning-system">
                 <option value="12edo">12 EDO</option>
                 <option value="24edo">24 EDO</option>
                 <option value="31edo">31 EDO</option>
-                <option value="53edo">53 EDO</option>
                 <option value="ed3">ED3</option>
                 <option value="ji">Just Intonation</option>
+            </select>
+
+            <label for="exercise-type">Exercise Type:</label>
+            <select id="exercise-type">
+                <option value="interval">Interval</option>
+                <option value="scale">Scale</option>
+                <option value="chord">Chord</option>
             </select>
 
             <button id="start-training">Start Training</button>
@@ -31,13 +37,9 @@
 
         <div class="exercise">
             <h2>Exercise</h2>
-            <p>Identify the interval, scale, or chord played:</p>
+            <p id="instruction">Identify the interval:</p>
             <button id="play-sound">Play Sound</button>
-            <div class="options">
-                <button class="option">Option 1</button>
-                <button class="option">Option 2</button>
-                <button class="option">Option 3</button>
-            </div>
+            <div class="options" id="options-container"></div>
         </div>
 
         <div class="scoreboard">
